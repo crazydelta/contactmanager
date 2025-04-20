@@ -1,26 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { fetchContacts, deleteContact } from '../api';
+import React from 'react';
+import { deleteContact } from '../api'; 
 
-const ContactList = () => {
-  const [contacts, setContacts] = useState([]);
-
-  const loadContacts = async () => {
-    try {
-      const res = await fetchContacts();
-      setContacts(res.data);
-    } catch (error) {
-      console.error('Error fetching contacts:', error);
-    }
-  };
-
-  useEffect(() => {
-    loadContacts();
-  }, []);
-
+const ContactList = ({ contacts, onEdit, setContacts }) => {
   const handleDelete = async (id) => {
     try {
       await deleteContact(id);
-      loadContacts(); // refresh list after delete
+      setContacts(prevContacts => prevContacts.filter(contact => contact.id !== id));
     } catch (error) {
       console.error('Error deleting contact:', error);
     }
@@ -43,12 +28,19 @@ const ContactList = () => {
                 <p className="text-gray-600">{contact.email}</p>
                 <p className="text-gray-600">{contact.phone}</p>
               </div>
-              <button
-                onClick={() => handleDelete(contact.id)}
-                className="text-red-600 hover:text-red-800 font-semibold"
-              >
-                Delete
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => onEdit(contact)}  className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-1 px-3 rounded"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(contact.id)}
+                  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded"
+                >
+                  Delete
+                </button>
+              </div>
             </li>
           ))}
         </ul>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ContactForm from '../components/ContactForm';
 import ContactList from '../components/ContactList';
 import { fetchContacts } from '../api'; // Assuming you have a fetchContacts function
@@ -6,14 +6,32 @@ import { fetchContacts } from '../api'; // Assuming you have a fetchContacts fun
 const Home = () => {
   const [isFormVisible, setFormVisible] = useState(false);
   const [contacts, setContacts] = useState([]); // State to hold contacts
+  const [editingContact, setEditingContact] = useState(null); // State to hold the contact being edited
 
   const handleAddNewContact = () => {
+    setEditingContact(null); // Reset editing contact
     setFormVisible(true);
   };
 
   const handleFormSubmit = (newContact) => {
-    setContacts(prevContacts => [...prevContacts, newContact]); // Add new contact to the list
+    if (editingContact) {
+      // Update existing contact
+      setContacts(prevContacts => 
+        prevContacts.map(contact => 
+          contact.id === newContact.id ? newContact : contact
+        )
+      );
+    } else {
+      // Add new contact
+      setContacts(prevContacts => [...prevContacts, newContact]);
+    }
     setFormVisible(false);
+    setEditingContact(null); // Reset editing contact
+  };
+
+  const handleEditContact = (contact) => {
+    setEditingContact(contact); // Set the contact to be edited
+    setFormVisible(true); // Show the form
   };
 
   const loadContacts = async () => {
@@ -26,7 +44,7 @@ const Home = () => {
   };
 
   // Load contacts when the component mounts
-  React.useEffect(() => {
+  useEffect(() => {
     loadContacts();
   }, []);
 
@@ -44,10 +62,10 @@ const Home = () => {
         </div>
         {isFormVisible && (
           <div className="mb-6">
-            <ContactForm onSubmit={handleFormSubmit} />
+            <ContactForm onSubmit={handleFormSubmit} contact={editingContact} /> {/* Pass the editing contact */}
           </div>
         )}
-        <ContactList contacts={contacts} setContacts={setContacts} /> {/* Pass contacts to ContactList */}
+        <ContactList contacts={contacts} onEdit={handleEditContact} setContacts={setContacts} /> {/* Pass onEdit and setContacts to ContactList */}
       </div>
     </div>
   );
